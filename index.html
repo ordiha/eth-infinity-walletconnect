@@ -2,116 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🌌 WalletConnect Playground</title>
+  <title>WalletConnect Playground</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="scripts.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 10px;
-    }
-    p {
-      margin-bottom: 30px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 15px;
-    }
-    .card {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    input, button {
-      margin: 6px;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background: #ff7f50;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover { background: #ff5722; }
-    .status {
-      margin-top: 8px;
-      font-size: 0.85em;
-      color: #ffd700;
-    }
-    .link {
-      display: block;
-      margin-top: 6px;
-      font-size: 0.8em;
-      color: #a8ffb5;
-    }
+    body { font-family: Arial, sans-serif; background:#f4f8ff; padding:20px; }
+    button { margin:5px; padding:10px; border:none; background:#007bff; color:#fff; border-radius:8px; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .card { background:#fff; padding:15px; margin:10px 0; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .status { margin-top:8px; font-size:14px; }
   </style>
 </head>
 <body>
-  <h1>🌌 WalletConnect Playground</h1>
-  <p>Interact with deployed contracts on <b>Base</b>. Powered by WalletConnect.</p>
-  
-  <button onclick="connectWallet()">🔌 Connect Wallet</button>
-  <div id="walletAddress" style="margin:10px; font-size:0.9em; color:#a8ffb5;"></div>
+  <h1>WalletConnect Playground</h1>
+  <button onclick="connectWallet()">🔗 Connect Wallet</button>
+  <div id="walletAddress">Not connected</div>
 
-  <div class="grid">
-
-    <!-- OpenMintNFT -->
-    <section class="card">
-      <h2>🖼 OpenMintNFT</h2>
-      <input id="openMintInput" placeholder="Enter text" />
-      <button onclick="actions.mintOpenNFT()">Mint</button>
-      <div class="status" id="statusOpenMint"></div>
-      <a class="link" href="https://basescan.org/address/0x79f6e18a8376b02b35C1D5C02DA86Ec03cA6d57d#code" target="_blank">View on BaseScan</a>
-    </section>
-
-    <!-- ColorNFT -->
-    <section class="card">
-      <h2>🎨 ColorNFT</h2>
-      <input id="colorNFTInput" placeholder="#FF0000" />
-      <button onclick="actions.mintColorNFT()">Mint Color</button>
-      <div class="status" id="statusColorNFT"></div>
-      <a class="link" href="https://basescan.org/address/0x7e5b2523Da5D63e500b9b050f45f993b811c6548#code" target="_blank">View on BaseScan</a>
-    </section>
-
-    <!-- TimeNFT -->
-    <section class="card">
-      <h2>⏰ TimeNFT</h2>
-      <button onclick="actions.mintTimeNFT()">Mint</button>
-      <div class="status" id="statusTimeNFT"></div>
-      <a class="link" href="https://basescan.org/address/0x6A7b0FD9Ea1809a5F0F4369e191a0B021D11BCD5#code" target="_blank">View on BaseScan</a>
-    </section>
-
-    <!-- EvolvingNFT -->
-    <section class="card">
-      <h2>🔄 EvolvingNFT</h2>
-      <input id="evolveId" type="number" placeholder="Token ID" />
-      <button onclick="actions.evolveNFT()">Evolve</button>
-      <div class="status" id="statusEvolve"></div>
-      <a class="link" href="https://basescan.org/address/0xFAb4D080D6b1AF6d84685148f9D6a7195f86b829#code" target="_blank">View on BaseScan</a>
-    </section>
-
-    <!-- OpinionRegistry -->
-    <section class="card">
-      <h2>💬 OpinionRegistry</h2>
-      <div class="small">Call: <code>addOpinion(uint256 topicId, string text)</code></div>
-      <input id="opinionTopic" type="number" placeholder="Topic ID" />
-      <input id="opinionText" placeholder="Write opinion..." />
-      <button onclick="actions.addOpinion()">Submit</button>
-      <div class="status" id="statusOpinion"></div>
-      <a class="link" href="https://basescan.org/address/0xE74706982Be1c7223E5855EA42DCF96F1104215B#code" target="_blank">View on BaseScan</a>
-    </section>
-
+  <div class="card">
+    <h3>OpenMintNFT</h3>
+    <input id="openMintInput" placeholder="Text for NFT" />
+    <button onclick="actions.mintOpenNFT()">Mint</button>
+    <div id="statusOpenMint" class="status"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="scripts.js"></script>
+  <div class="card">
+    <h3>ColorNFT</h3>
+    <input id="colorNFTInput" placeholder="#RRGGBB" />
+    <button onclick="actions.mintColorNFT()">Mint</button>
+    <div id="statusColorNFT" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h3>TimeNFT</h3>
+    <button onclick="actions.mintTimeNFT()">Mint</button>
+    <div id="statusTimeNFT" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h3>EvolvingNFT</h3>
+    <input id="evolveId" type="number" placeholder="Token ID" />
+    <button onclick="actions.evolveNFT()">Evolve</button>
+    <div id="statusEvolve" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h3>Opinion Registry</h3>
+    <input id="opinionTopic" type="number" placeholder="Topic ID" />
+    <input id="opinionText" placeholder="Your opinion" />
+    <button onclick="actions.addOpinion()">Submit</button>
+    <div id="statusOpinion" class="status"></div>
+  </div>
 </body>
 </html>
