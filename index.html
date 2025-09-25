@@ -1,84 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Eth Infinity WalletConnect</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- web3 + WalletConnect provider (UMD builds via CDN) -->
+  <meta charset="UTF-8">
+  <title>WalletConnect Playground</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f8ff; padding:20px; }
+    button { margin:5px; padding:10px; border:none; background:#007bff; color:#fff; border-radius:8px; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .card { background:#fff; padding:15px; margin:10px 0; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .status { margin-top:8px; font-size:14px; }
+  </style>
 </head>
 <body>
-  <header class="top">
-    <h1>🌌 Eth-Infinity — WalletConnect Demo</h1>
-    <p class="lead">Connect with MetaMask, Rabby or WalletConnect (mobile). Interact with live contracts on Base.</p>
+  <h1>WalletConnect Playground</h1>
+  <button onclick="connectWallet()">🔗 Connect Wallet</button>
+  <div id="walletAddress">Not connected</div>
 
-    <div class="connect-row">
-      <button id="btnConnect" class="btn">🔗 Connect Wallet</button>
-      <div id="addr" class="addr">Not connected</div>
-      <div id="chain" class="chain"></div>
-    </div>
-  </header>
+  <div class="card">
+    <h3>OpenMintNFT</h3>
+    <input id="openMintInput" placeholder="Text for NFT" />
+    <button onclick="actions.mintOpenNFT()">Mint</button>
+    <div id="statusOpenMint" class="status"></div>
+  </div>
 
-  <main class="grid" id="cards">
-    <!-- OpenMintNFT -->
-    <section class="card">
-      <h2>🖼 OpenMintNFT</h2>
-      <div class="small">Call: <code>mint(string)</code></div>
-      <input id="openMintText" placeholder="Text to mint" />
-      <button onclick="actions.mintOpen()">Mint</button>
-      <div class="status" id="statusOpen"></div>
-      <a class="link" href="https://basescan.org/address/0x79f6e18a8376b02b35C1D5C02DA86Ec03cA6d57d#code" target="_blank">View on BaseScan</a>
-    </section>
+  <div class="card">
+    <h3>ColorNFT</h3>
+    <input id="colorNFTInput" placeholder="#RRGGBB" />
+    <button onclick="actions.mintColorNFT()">Mint</button>
+    <div id="statusColorNFT" class="status"></div>
+  </div>
 
-    <!-- DonationTracker2 -->
-    <section class="card">
-      <h2>❤️ DonationTracker2</h2>
-      <div class="small">Call: <code>donate() payable</code></div>
-      <input id="donateEth" type="number" placeholder="ETH amount (e.g. 0.001)" step="0.00000001" />
-      <button onclick="actions.donate()">Donate</button>
-      <div class="status" id="statusDonate"></div>
-      <a class="link" href="https://basescan.org/address/0x9dDAf52D93FE53715dC510190b2DDD1d1CafA8fB#code" target="_blank">View on BaseScan</a>
-    </section>
+  <div class="card">
+    <h3>TimeNFT</h3>
+    <button onclick="actions.mintTimeNFT()">Mint</button>
+    <div id="statusTimeNFT" class="status"></div>
+  </div>
 
-    <!-- Lottery -->
-    <section class="card">
-      <h2>🎲 Lottery</h2>
-      <div class="small">Call: <code>buyTicket() payable</code></div>
-      <input id="lotteryEth" type="number" placeholder="ETH amount" step="0.00000001" />
-      <button onclick="actions.buyTicket()">Buy Ticket</button>
-      <div class="status" id="statusLottery"></div>
-      <a class="link" href="https://basescan.org/address/0x2eDb3668A8c37a1b1D1934e4247da47FA2c73daf#code" target="_blank">View on BaseScan</a>
-    </section>
+  <div class="card">
+    <h3>EvolvingNFT</h3>
+    <input id="evolveId" type="number" placeholder="Token ID" />
+    <button onclick="actions.evolveNFT()">Evolve</button>
+    <div id="statusEvolve" class="status"></div>
+  </div>
 
-    <!-- OpinionRegistry (fixed: topicId + text) -->
-    <section class="card">
-      <h2>💬 OpinionRegistry</h2>
-      <div class="small">Call: <code>addOpinion(uint256 topicId, string text)</code></div>
-      <input id="opinionTopic" type="number" placeholder="Topic ID (number)" />
-      <input id="opinionText" placeholder="Write opinion..." />
-      <button onclick="actions.addOpinion()">Submit</button>
-      <div class="status" id="statusOpinion"></div>
-      <a class="link" href="https://basescan.org/address/0xE74706982Be1c7223E5855EA42DCF96F1104215B#code" target="_blank">View on BaseScan</a>
-    </section>
+  <div class="card">
+    <h3>Opinion Registry</h3>
+    <input id="opinionTopic" type="number" placeholder="Topic ID" />
+    <input id="opinionText" placeholder="Your opinion" />
+    <button onclick="actions.addOpinion()">Submit</button>
+    <div id="statusOpinion" class="status"></div>
+  </div>
 
-    <!-- GuessNumber -->
-    <section class="card">
-      <h2>🔢 GuessNumber</h2>
-      <div class="small">Call: <code>guess(uint256)</code></div>
-      <input id="guessNumber" type="number" placeholder="Enter a number" />
-      <button onclick="actions.guessNumber()">Guess</button>
-      <div class="status" id="statusGuess"></div>
-      <a class="link" href="https://basescan.org/address/0xe5c4636C0249312fda74492A1a68094C1c08dA54#code" target="_blank">View on BaseScan</a>
-    </section>
-  </main>
-
-  <footer class="foot">
-    <div>Repo: <code>eth-infinity-walletconnect</code></div>
-    <div id="txLog" class="txlog"></div>
-  </footer>
-
+  <!-- ✅ Load script at the very end -->
   <script src="scripts.js"></script>
 </body>
 </html>
