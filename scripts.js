@@ -1,18 +1,26 @@
 let web3;
 let accounts = [];
 
-// Connect wallet via injected provider (MetaMask, Rabby, or WC extension)
+// Connect wallet
 async function connectWallet() {
   if (window.ethereum) {
-    web3 = new Web3(window.ethereum);
     try {
-      accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      document.getElementById("walletAddress").innerText = "Connected: " + accounts[0];
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      web3 = new Web3(window.ethereum);
+      accounts = await web3.eth.getAccounts();
+      document.getElementById("walletAddress").innerText =
+        "Connected: " + accounts[0];
     } catch (err) {
-      alert("Connection rejected.");
+      alert("Connection rejected: " + err.message);
     }
   } else {
-    alert("No Ethereum wallet detected. Please install MetaMask or Rabby.");
+    alert("No wallet detected (MetaMask/Rabby).");
+  }
+}
+
+async function ensureConnected() {
+  if (!web3 || accounts.length === 0) {
+    await connectWallet();
   }
 }
 
@@ -34,83 +42,53 @@ const ABI = {
   opinion: [{"inputs":[{"internalType":"uint256","name":"topicId","type":"uint256"},{"internalType":"string","name":"text","type":"string"}],"name":"addOpinion","outputs":[],"stateMutability":"nonpayable","type":"function"}]
 };
 
-// Send transaction
 async function sendTx(contract, method, args = [], value = 0) {
+  await ensureConnected();
   const tx = contract.methods[method](...args);
   const gas = await tx.estimateGas({ from: accounts[0], value });
   return tx.send({ from: accounts[0], gas, value })
-    .once('transactionHash', (hash) => hash);
+    .once("transactionHash", (hash) => hash);
 }
 
 // Actions
 const actions = {
-  // OpenMintNFT
   mintOpenNFT: async () => {
     const txt = document.getElementById("openMintInput").value || "Hello";
-    document.getElementById("statusOpenMint").innerText = "Sending...";
-    try {
-      const c = new web3.eth.Contract(ABI.openMint, ADDR.openMint);
-      const hash = await sendTx(c, "mint", [txt]);
-      document.getElementById("statusOpenMint").innerHTML = `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash.slice(0,10)}...</a>`;
-    } catch (e) {
-      document.getElementById("statusOpenMint").innerText = "❌ " + (e.message || e);
-    }
+    const c = new web3.eth.Contract(ABI.openMint, ADDR.openMint);
+    const hash = await sendTx(c, "mint", [txt]);
+    document.getElementById("statusOpenMint").innerHTML =
+      `✅ <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`;
   },
 
-  // ColorNFT
   mintColorNFT: async () => {
     const color = document.getElementById("colorNFTInput").value || "#00FF00";
-    document.getElementById("statusColorNFT").innerText = "Sending...";
-    try {
-      const c = new web3.eth.Contract(ABI.colorNFT, ADDR.colorNFT);
-      const hash = await sendTx(c, "mint", [color]);
-      document.getElementById("statusColorNFT").innerHTML = `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash.slice(0,10)}...</a>`;
-    } catch (e) {
-      document.getElementById("statusColorNFT").innerText = "❌ " + (e.message || e);
-    }
+    const c = new web3.eth.Contract(ABI.colorNFT, ADDR.colorNFT);
+    const hash = await sendTx(c, "mint", [color]);
+    document.getElementById("statusColorNFT").innerHTML =
+      `✅ <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`;
   },
 
-  // TimeNFT
   mintTimeNFT: async () => {
-    document.getElementById("statusTimeNFT").innerText = "Sending...";
-    try {
-      const c = new web3.eth.Contract(ABI.timeNFT, ADDR.timeNFT);
-      const hash = await sendTx(c, "mint");
-      document.getElementById("statusTimeNFT").innerHTML = `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash.slice(0,10)}...</a>`;
-    } catch (e) {
-      document.getElementById("statusTimeNFT").innerText = "❌ " + (e.message || e);
-    }
+    const c = new web3.eth.Contract(ABI.timeNFT, ADDR.timeNFT);
+    const hash = await sendTx(c, "mint");
+    document.getElementById("statusTimeNFT").innerHTML =
+      `✅ <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`;
   },
 
-  // EvolvingNFT
   evolveNFT: async () => {
     const id = document.getElementById("evolveId").value || 1;
-    document.getElementById("statusEvolve").innerText = "Sending...";
-    try {
-      const c = new web3.eth.Contract(ABI.evolving, ADDR.evolving);
-      const hash = await sendTx(c, "evolve", [id]);
-      document.getElementById("statusEvolve").innerHTML = `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash.slice(0,10)}...</a>`;
-    } catch (e) {
-      document.getElementById("statusEvolve").innerText = "❌ " + (e.message || e);
-    }
+    const c = new web3.eth.Contract(ABI.evolving, ADDR.evolving);
+    const hash = await sendTx(c, "evolve", [id]);
+    document.getElementById("statusEvolve").innerHTML =
+      `✅ <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`;
   },
 
-  // OpinionRegistry
   addOpinion: async () => {
     const topicId = Number(document.getElementById("opinionTopic").value);
     const txt = document.getElementById("opinionText").value || "Nice!";
-    if (!Number.isInteger(topicId)) {
-      document.getElementById("statusOpinion").innerText = "Enter a topic ID (number)";
-      return;
-    }
-    document.getElementById("statusOpinion").innerText = "Sending...";
-    try {
-      const c = new web3.eth.Contract(ABI.opinion, ADDR.opinion);
-      const hash = await sendTx(c, "addOpinion", [topicId, txt]);
-      document.getElementById("statusOpinion").innerHTML =
-        `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash.slice(0,10)}...</a>`;
-    } catch (e) {
-      document.getElementById("statusOpinion").innerText = "❌ " + (e.message || e);
-    }
+    const c = new web3.eth.Contract(ABI.opinion, ADDR.opinion);
+    const hash = await sendTx(c, "addOpinion", [topicId, txt]);
+    document.getElementById("statusOpinion").innerHTML =
+      `✅ <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`;
   }
 };
