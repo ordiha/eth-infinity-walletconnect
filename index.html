@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>WalletConnect Playground</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="scripts.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#f4f8ff; padding:20px; }
     button { margin:5px; padding:10px; border:none; background:#007bff; color:#fff; border-radius:8px; cursor:pointer; }
@@ -52,5 +51,8 @@
     <button onclick="actions.addOpinion()">Submit</button>
     <div id="statusOpinion" class="status"></div>
   </div>
+
+  <!-- ✅ Load script at the very end -->
+  <script src="scripts.js"></script>
 </body>
 </html>
