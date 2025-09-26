@@ -1,190 +1,186 @@
-// scripts.js - full file (replace existing)
-/// Supports injected wallets (MetaMask/Rabby) and WalletConnect fallback.
-/// Ensures connection before sending tx, handles errors, updates statuses.
+// scripts.js — Eth Infinity WalletConnect Integration
+// Using WalletConnect v2 (project: eth-infinity-walletconnect)
 
-let web3;
 let provider;
+let web3;
 let accounts = [];
-const BASE_RPC = "https://mainnet.base.org"; // Base mainnet RPC (chainId 8453)
 
-// Contract addresses (your deployed contracts)
-const ADDR = {
-  openMint: "0x79f6e18a8376b02b35C1D5C02DA86Ec03cA6d57d",
-  donation: "0x9dDAf52D93FE53715dC510190b2DDD1d1CafA8fB",
-  lottery: "0x2eDb3668A8c37a1b1D1934e4247da47FA2c73daf",
-  opinion: "0xE74706982Be1c7223E5855EA42DCF96F1104215B",
-  guess: "0xe5c4636C0249312fda74492A1a68094C1c08dA54"
+const CONTRACTS = {
+  OpenMintNFT: {
+    address: "0x79f6e18a8376b02b35C1D5C02DA86Ec03cA6d57d",
+    abi: [
+      {
+        "inputs": [{ "internalType": "string", "name": "text", "type": "string" }],
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ]
+  },
+  DonationTracker2: {
+    address: "0x9dDAf52D93FE53715dC510190b2DDD1d1CafA8fB",
+    abi: [
+      {
+        "inputs": [],
+        "name": "donate",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ]
+  },
+  Lottery: {
+    address: "0x2eDb3668A8c37a1b1D1934e4247da47FA2c73daf",
+    abi: [
+      {
+        "inputs": [],
+        "name": "buyTicket",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ]
+  },
+  OpinionRegistry: {
+    address: "0xE74706982Be1c7223E5855EA42DCF96F1104215B",
+    abi: [
+      {
+        "inputs": [{ "internalType": "string", "name": "opinion", "type": "string" }],
+        "name": "addOpinion",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ]
+  },
+  GuessNumber: {
+    address: "0xe5c4636C0249312fda74492A1a68094C1c08dA54",
+    abi: [
+      {
+        "inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],
+        "name": "guess",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ]
+  }
 };
 
-// Minimal ABIs for functions used
-const ABI = {
-  mintString: [{ "inputs":[{ "internalType":"string","name":"_s","type":"string" }], "name":"mint", "outputs":[], "stateMutability":"nonpayable", "type":"function" }],
-  donate: [{ "inputs":[], "name":"donate", "outputs":[], "stateMutability":"payable", "type":"function" }],
-  buyTicket: [{ "inputs":[], "name":"buyTicket", "outputs":[], "stateMutability":"payable", "type":"function" }],
-  addOpinion: [
-    { "inputs":[ { "internalType":"uint256","name":"topicId","type":"uint256" }, { "internalType":"string","name":"text","type":"string" } ],
-      "name":"addOpinion","outputs":[],"stateMutability":"nonpayable","type":"function" }
-  ],
-  guess: [{ "inputs":[{ "internalType":"uint256","name":"n","type":"uint256"}], "name":"guess","outputs":[],"stateMutability":"nonpayable","type":"function" }]
-};
-
-// UI helpers
-const $ = id => document.getElementById(id);
-const setStatus = (id, txt) => { const el = $(id); if (el) el.innerHTML = txt; };
-const logTx = txt => { const el = $("txLog"); if (!el) return; const p = document.createElement("div"); p.innerHTML = txt; el.prepend(p); };
-
-// Try to connect using injected provider first, else WalletConnect
-async function connectWalletFlow() {
+// --- Connect Wallet ---
+async function connectWallet() {
   try {
-    if (window.ethereum) {
-      provider = window.ethereum;
-      // Request accounts
-      await provider.request({ method: 'eth_requestAccounts' });
-      web3 = new Web3(provider);
-    } else {
-      // fallback: WalletConnectProvider (UMD)
-      const WalletConnectProvider = window.WalletConnectProvider.default;
-      provider = new WalletConnectProvider({
-        rpc: { 8453: BASE_RPC },
-        qrcode: true
+    provider = window.ethereum;
+
+    // If MetaMask or Rabby not available → fallback to WalletConnect
+    if (!provider) {
+      provider = window.WalletConnectProvider.init({
+        projectId: "5056a2b581e5962f9e3083d68053b5d8", // 🚀 your project id
+        chains: [8453], // Base Mainnet
+        showQrModal: true
       });
       await provider.enable();
-      web3 = new Web3(provider);
-      // listen for disconnect
-      provider.on && provider.on("disconnect", (code, reason) => {
-        accounts = [];
-        $("addr").innerText = "Not connected";
-        $("chain").innerText = "";
-        logTx("WalletConnect disconnected");
-      });
     }
 
-    accounts = await web3.eth.getAccounts();
-    if (accounts && accounts[0]) {
-      $("addr").innerText = "Connected: " + accounts[0];
-      const chainId = await web3.eth.getChainId();
-      $("chain").innerText = chainId === 8453 ? "Base mainnet (8453)" : "Chain ID: " + chainId;
-      return true;
-    } else {
-      throw new Error("No accounts found");
-    }
+    web3 = new Web3(provider);
+    accounts = await web3.eth.requestAccounts();
+    const chainId = await web3.eth.getChainId();
+
+    document.getElementById("addr").innerText = accounts[0];
+    document.getElementById("chain").innerText = "Chain ID: " + chainId;
+
+    log("✅ Wallet connected");
   } catch (err) {
-    console.error("connectWalletFlow error:", err);
-    alert("Connection failed: " + (err.message || err));
-    return false;
+    console.error("Wallet connection failed", err);
+    log("❌ Wallet connection failed");
   }
 }
 
-// Bound to Connect button
-document.getElementById("btnConnect").addEventListener("click", async () => {
-  const ok = await connectWalletFlow();
-  if (ok) document.getElementById("btnConnect").innerText = "Wallet connected ✅";
-});
-
-// ensure web3 + accounts ready
-async function ensureConnected() {
-  if (!web3 || !accounts || accounts.length === 0) {
-    const ok = await connectWalletFlow();
-    if (!ok) throw new Error("Wallet not connected");
-  }
+// --- Helpers ---
+function getContract(name) {
+  const c = CONTRACTS[name];
+  return new web3.eth.Contract(c.abi, c.address);
 }
 
-// Generic sendTx: estimates gas, sends, returns txHash
-async function sendTx(contractInstance, methodName, args = [], value = "0") {
-  await ensureConnected();
-  const from = accounts[0];
-  const method = contractInstance.methods[methodName](...args);
-  let gas;
-  try {
-    gas = await method.estimateGas({ from, value });
-  } catch (e) {
-    // if estimateGas fails, try with a fallback gas limit
-    gas = 500000;
-  }
-  return new Promise((resolve, reject) => {
-    method.send({ from, value, gas })
-      .on("transactionHash", hash => { resolve(hash); })
-      .on("error", err => { reject(err); });
-  });
+function log(msg) {
+  const div = document.getElementById("txLog");
+  div.innerHTML = msg + "<br/>" + div.innerHTML;
 }
 
-// Actions exposed for index.html buttons
-window.actions = {
-  // OpenMintNFT: mint(string)
-  mintOpen: async () => {
-    const txt = ($("openMintText").value || "").toString();
-    setStatus("statusOpen", "Sending...");
+// --- Actions ---
+const actions = {
+  mintOpen: async function () {
     try {
-      const c = new web3.eth.Contract(ABI.mintString, ADDR.openMint);
-      const hash = await sendTx(c, "mint", [txt], "0");
-      setStatus("statusOpen", `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`);
-      logTx(`<a href="https://basescan.org/tx/${hash}" target="_blank">OpenMint tx: ${hash}</a>`);
+      const txt = document.getElementById("openMintText").value;
+      const c = getContract("OpenMintNFT");
+      const tx = await c.methods.mint(txt).send({ from: accounts[0] });
+      document.getElementById("statusOpen").innerText = "✅ Tx: " + tx.transactionHash;
+      log("OpenMintNFT minted");
     } catch (e) {
-      setStatus("statusOpen", "❌ " + (e.message || e));
+      console.error(e);
+      document.getElementById("statusOpen").innerText = "❌ Error";
     }
   },
 
-  // DonationTracker2: donate() payable
-  donate: async () => {
-    const raw = $("donateEth").value || "0";
-    if (Number(raw) <= 0) { setStatus("statusDonate", "Enter an amount > 0"); return; }
-    setStatus("statusDonate", "Sending...");
+  donate: async function () {
     try {
-      const value = web3.utils.toWei(String(raw), "ether");
-      const c = new web3.eth.Contract(ABI.donate, ADDR.donation);
-      const hash = await sendTx(c, "donate", [], value);
-      setStatus("statusDonate", `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`);
-      logTx(`<a href="https://basescan.org/tx/${hash}" target="_blank">Donate tx: ${hash}</a>`);
+      const eth = document.getElementById("donateEth").value;
+      const c = getContract("DonationTracker2");
+      const tx = await c.methods.donate().send({
+        from: accounts[0],
+        value: web3.utils.toWei(eth, "ether")
+      });
+      document.getElementById("statusDonate").innerText = "✅ Tx: " + tx.transactionHash;
+      log("Donation sent");
     } catch (e) {
-      setStatus("statusDonate", "❌ " + (e.message || e));
+      console.error(e);
+      document.getElementById("statusDonate").innerText = "❌ Error";
     }
   },
 
-  // Lottery: buyTicket() payable
-  buyTicket: async () => {
-    const raw = $("lotteryEth").value || "0";
-    if (Number(raw) <= 0) { setStatus("statusLottery", "Enter an amount > 0"); return; }
-    setStatus("statusLottery", "Sending...");
+  buyTicket: async function () {
     try {
-      const value = web3.utils.toWei(String(raw), "ether");
-      const c = new web3.eth.Contract(ABI.buyTicket, ADDR.lottery);
-      const hash = await sendTx(c, "buyTicket", [], value);
-      setStatus("statusLottery", `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`);
-      logTx(`<a href="https://basescan.org/tx/${hash}" target="_blank">Lottery tx: ${hash}</a>`);
+      const eth = document.getElementById("lotteryEth").value;
+      const c = getContract("Lottery");
+      const tx = await c.methods.buyTicket().send({
+        from: accounts[0],
+        value: web3.utils.toWei(eth, "ether")
+      });
+      document.getElementById("statusLottery").innerText = "✅ Tx: " + tx.transactionHash;
+      log("Lottery ticket bought");
     } catch (e) {
-      setStatus("statusLottery", "❌ " + (e.message || e));
+      console.error(e);
+      document.getElementById("statusLottery").innerText = "❌ Error";
     }
   },
 
-  // OpinionRegistry: addOpinion(uint256, string)  <- FIXED (topicId + text)
-  addOpinion: async () => {
-    const topicRaw = $("opinionTopic").value;
-    const txt = ($("opinionText").value || "").toString();
-    const topicId = Number(topicRaw);
-    if (!Number.isInteger(topicId)) { setStatus("statusOpinion", "Enter a valid Topic ID (integer)"); return; }
-    setStatus("statusOpinion", "Sending...");
+  addOpinion: async function () {
     try {
-      const c = new web3.eth.Contract(ABI.addOpinion, ADDR.opinion);
-      const hash = await sendTx(c, "addOpinion", [topicId, txt], "0");
-      setStatus("statusOpinion", `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`);
-      logTx(`<a href="https://basescan.org/tx/${hash}" target="_blank">Opinion tx: ${hash}</a>`);
+      const txt = document.getElementById("opinionText").value;
+      const c = getContract("OpinionRegistry");
+      const tx = await c.methods.addOpinion(txt).send({ from: accounts[0] });
+      document.getElementById("statusOpinion").innerText = "✅ Tx: " + tx.transactionHash;
+      log("Opinion submitted");
     } catch (e) {
-      setStatus("statusOpinion", "❌ " + (e.message || e));
+      console.error(e);
+      document.getElementById("statusOpinion").innerText = "❌ Error";
     }
   },
 
-  // GuessNumber: guess(uint256)
-  guessNumber: async () => {
-    const n = Number($("guessNumber").value);
-    if (!Number.isInteger(n)) { setStatus("statusGuess", "Enter an integer"); return; }
-    setStatus("statusGuess", "Sending...");
+  guessNumber: async function () {
     try {
-      const c = new web3.eth.Contract(ABI.guess, ADDR.guess);
-      const hash = await sendTx(c, "guess", [n], "0");
-      setStatus("statusGuess", `✅ Sent — <a href="https://basescan.org/tx/${hash}" target="_blank">${hash}</a>`);
-      logTx(`<a href="https://basescan.org/tx/${hash}" target="_blank">Guess tx: ${hash}</a>`);
+      const num = document.getElementById("guessNumber").value;
+      const c = getContract("GuessNumber");
+      const tx = await c.methods.guess(num).send({ from: accounts[0] });
+      document.getElementById("statusGuess").innerText = "✅ Tx: " + tx.transactionHash;
+      log("Guess sent");
     } catch (e) {
-      setStatus("statusGuess", "❌ " + (e.message || e));
+      console.error(e);
+      document.getElementById("statusGuess").innerText = "❌ Error";
     }
   }
 };
+
+// --- Button binding ---
+document.getElementById("btnConnect").addEventListener("click", connectWallet);
