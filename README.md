@@ -3,7 +3,7 @@
 Demo dApp to prove **WalletConnect** + MetaMask integration for Base.  
 Uses your already-deployed contracts on Base and lets users interact directly from the site.
 
-Live front (after enabling GitHub Pages): `https://<your-username>.github.io/eth-infinity-walletconnect/`
+Live front: https://ordiha.github.io/eth-infinity-walletconnect/ 
 
 ## Included interactions (first launch)
 - OpenMintNFT — mint a text NFT
