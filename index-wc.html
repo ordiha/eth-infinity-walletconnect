@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Eth Infinity — WalletConnect v2</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Web3Modal v2 (UMD bundle) -->
+  <script src="https://unpkg.com/@web3modal/standalone@2.7.1/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>🌌 Eth-Infinity — WalletConnect Campaign Demo</h1>
+    <p class="lead">Now using <strong>WalletConnect v2 + Web3Modal</strong>. All sessions go through WC relay.</p>
+
+    <div class="connect-row">
+      <button id="btnConnect" class="btn">🔗 Connect Wallet</button>
+      <div id="addr" class="addr">Not connected</div>
+      <div id="chain" class="chain"></div>
+    </div>
+  </header>
+
+  <main class="grid" id="cards">
+    <!-- Example: 5 contracts -->
+    <section class="card">
+      <h2>🖼 OpenMintNFT</h2>
+      <div class="small">mint(string)</div>
+      <input id="openMintText" placeholder="Text to mint" />
+      <button onclick="actions.mintOpen()">Mint</button>
+      <div class="status" id="statusOpen"></div>
+    </section>
+
+    <section class="card">
+      <h2>❤️ DonationTracker2</h2>
+      <div class="small">donate() payable</div>
+      <input id="donateEth" type="number" step="0.0001" placeholder="ETH amount" />
+      <button onclick="actions.donate()">Donate</button>
+      <div class="status" id="statusDonate"></div>
+    </section>
+
+    <section class="card">
+      <h2>🎲 Lottery</h2>
+      <div class="small">buyTicket() payable</div>
+      <input id="lotteryEth" type="number" step="0.0001" placeholder="ETH amount" />
+      <button onclick="actions.buyTicket()">Buy</button>
+      <div class="status" id="statusLottery"></div>
+    </section>
+
+    <section class="card">
+      <h2>💬 OpinionRegistry</h2>
+      <div class="small">addOpinion(string)</div>
+      <input id="opinionText" placeholder="Write opinion..." />
+      <button onclick="actions.addOpinion()">Submit</button>
+      <div class="status" id="statusOpinion"></div>
+    </section>
+
+    <section class="card">
+      <h2>🔢 GuessNumber</h2>
+      <div class="small">guess(uint256)</div>
+      <input id="guessNumber" type="number" />
+      <button onclick="actions.guessNumber()">Guess</button>
+      <div class="status" id="statusGuess"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div>Repo: <code>eth-infinity-walletconnect</code></div>
+    <div id="txLog" class="txlog"></div>
+  </footer>
+
+  <script src="wc-scripts.js"></script>
+</body>
+</html>
