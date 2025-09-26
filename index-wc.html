@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Eth Infinity — WalletConnect v2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eth Infinity WalletConnect</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Web3Modal v2 (UMD bundle) -->
-  <script src="https://unpkg.com/@web3modal/standalone@2.7.1/dist/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
   <header class="top">
-    <h1>🌌 Eth-Infinity — WalletConnect Campaign Demo</h1>
-    <p class="lead">Now using <strong>WalletConnect v2 + Web3Modal</strong>. All sessions go through WC relay.</p>
+    <h1>🌌 Eth-Infinity — WalletConnect Demo</h1>
+    <p class="lead">Connect with WalletConnect, MetaMask, or Rabby. Interact with live contracts on Base.</p>
 
     <div class="connect-row">
       <button id="btnConnect" class="btn">🔗 Connect Wallet</button>
@@ -22,46 +21,53 @@
   </header>
 
   <main class="grid" id="cards">
-    <!-- Example: 5 contracts -->
+    <!-- 5 Contract Interactions -->
+
     <section class="card">
       <h2>🖼 OpenMintNFT</h2>
-      <div class="small">mint(string)</div>
+      <div class="small">Call: <code>mint(string)</code></div>
       <input id="openMintText" placeholder="Text to mint" />
       <button onclick="actions.mintOpen()">Mint</button>
       <div class="status" id="statusOpen"></div>
+      <a class="link" href="https://basescan.org/address/0x79f6e18a8376b02b35C1D5C02DA86Ec03cA6d57d#code" target="_blank">View on BaseScan</a>
     </section>
 
     <section class="card">
       <h2>❤️ DonationTracker2</h2>
-      <div class="small">donate() payable</div>
-      <input id="donateEth" type="number" step="0.0001" placeholder="ETH amount" />
+      <div class="small">Call: <code>donate() payable</code></div>
+      <input id="donateEth" type="number" placeholder="ETH amount (e.g. 0.001)" step="0.00000001" />
       <button onclick="actions.donate()">Donate</button>
       <div class="status" id="statusDonate"></div>
+      <a class="link" href="https://basescan.org/address/0x9dDAf52D93FE53715dC510190b2DDD1d1CafA8fB#code" target="_blank">View on BaseScan</a>
     </section>
 
     <section class="card">
       <h2>🎲 Lottery</h2>
-      <div class="small">buyTicket() payable</div>
-      <input id="lotteryEth" type="number" step="0.0001" placeholder="ETH amount" />
-      <button onclick="actions.buyTicket()">Buy</button>
+      <div class="small">Call: <code>buyTicket() payable</code></div>
+      <input id="lotteryEth" type="number" placeholder="ETH amount" step="0.00000001" />
+      <button onclick="actions.buyTicket()">Buy Ticket</button>
       <div class="status" id="statusLottery"></div>
+      <a class="link" href="https://basescan.org/address/0x2eDb3668A8c37a1b1D1934e4247da47FA2c73daf#code" target="_blank">View on BaseScan</a>
     </section>
 
     <section class="card">
       <h2>💬 OpinionRegistry</h2>
-      <div class="small">addOpinion(string)</div>
+      <div class="small">Call: <code>addOpinion(string)</code></div>
       <input id="opinionText" placeholder="Write opinion..." />
       <button onclick="actions.addOpinion()">Submit</button>
       <div class="status" id="statusOpinion"></div>
+      <a class="link" href="https://basescan.org/address/0xE74706982Be1c7223E5855EA42DCF96F1104215B#code" target="_blank">View on BaseScan</a>
     </section>
 
     <section class="card">
       <h2>🔢 GuessNumber</h2>
-      <div class="small">guess(uint256)</div>
-      <input id="guessNumber" type="number" />
+      <div class="small">Call: <code>guess(uint256)</code></div>
+      <input id="guessNumber" type="number" placeholder="Enter a number" />
       <button onclick="actions.guessNumber()">Guess</button>
       <div class="status" id="statusGuess"></div>
+      <a class="link" href="https://basescan.org/address/0xe5c4636C0249312fda74492a1a68094C1c08dA54#code" target="_blank">View on BaseScan</a>
     </section>
+
   </main>
 
   <footer class="foot">
